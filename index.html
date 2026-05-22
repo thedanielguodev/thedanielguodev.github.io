@@ -3,47 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Unblocker</title>
+    <title>My Unblocker</title>
     <style>
-        body { margin:0; background:#0a0a0a; color:#fff; font-family:Arial,sans-serif; overflow:hidden; }
-        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:10px; z-index:1000; display:flex; gap:8px; box-shadow:0 2px 8px #000; }
-        input { flex:1; padding:14px; font-size:17px; background:#1f1f1f; border:none; border-radius:8px; color:white; }
-        button { padding:14px 24px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; font-weight:bold; }
-        iframe { width:100vw; height:100vh; border:none; margin-top:58px; }
-        .links { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.8); padding:10px; border-radius:8px; font-size:14px; }
+        body { margin:0; background:#111; color:#fff; font-family:Arial; overflow:hidden; }
+        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:12px; z-index:1000; display:flex; gap:10px; box-shadow:0 2px 10px #000; }
+        input { flex:1; padding:14px; font-size:17px; background:#222; border:none; border-radius:8px; color:white; }
+        button { padding:14px 28px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; font-size:16px; }
+        iframe { width:100vw; height:100vh; border:none; margin-top:60px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <input type="text" id="urlInput" placeholder="Try a GitHub unblocker or game site" autocomplete="off">
-        <button onclick="loadSite()">Go</button>
+        <input type="text" id="urlInput" placeholder="youtube.com or duckmath.org" autocomplete="off">
+        <button onclick="directLoad()">Direct</button>
+        <button onclick="translateLoad()">Google Translate Trick</button>
     </div>
 
     <iframe id="frame" src="https://drive-mad-unblock.github.io/"></iframe>
 
-    <div class="links">
-        <strong>Quick Mirrors:</strong><br>
-        <a href="#" onclick="quickLoad('https://drive-mad-unblock.github.io/');return false">Drive Mad</a> |
-        <a href="#" onclick="quickLoad('https://github.com/Neruvy/duckmath');return false">DuckMath Games</a>
-    </div>
-
     <script>
-        function loadSite() {
+        function directLoad() {
             let input = document.getElementById('urlInput').value.trim();
-            if (!input) return;
-
+            if (!input) return alert("Enter a URL");
             if (!input.startsWith('http')) input = 'https://' + input;
-
             document.getElementById('frame').src = input;
         }
 
-        function quickLoad(url) {
-            document.getElementById('frame').src = url;
+        function translateLoad() {
+            let input = document.getElementById('urlInput').value.trim();
+            if (!input) return alert("Enter a URL");
+            if (!input.startsWith('http')) input = 'https://' + input;
+            
+            // Google Translate bypass (often works better)
+            const translateUrl = `https://translate.google.com/translate?hl=en&sl=auto&tl=en&u=${encodeURIComponent(input)}`;
+            document.getElementById('frame').src = translateUrl;
         }
 
         // Enter key
         document.getElementById('urlInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') loadSite();
+            if (e.key === 'Enter') translateLoad(); // Default to translate trick
         });
     </script>
 </body>
