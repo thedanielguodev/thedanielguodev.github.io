@@ -1,60 +1,481 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unblocker</title>
-    <style>
-        body { margin:0; background:#0f0f0f; color:#fff; font-family:Arial; overflow:hidden; }
-        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:12px; z-index:1000; display:flex; gap:8px; box-shadow:0 2px 10px #000; }
-        input { flex:1; padding:14px; font-size:17px; background:#222; border:none; border-radius:8px; color:white; }
-        button { padding:14px 20px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; }
-        iframe { width:100vw; height:100vh; border:none; margin-top:62px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unblocker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111114;
+    --surface2: #18181c;
+    --border: #2a2a32;
+    --accent: #5b6fff;
+    --accent2: #00e5a0;
+    --text: #f0f0f5;
+    --muted: #666675;
+    --danger: #ff4d6a;
+    --warn: #ffb347;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .url-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .url-input-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .url-input-wrap input {
+    width: 100%;
+    padding: 11px 40px 11px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .url-input-wrap input:focus {
+    border-color: var(--accent);
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: none;
+    padding: 2px;
+  }
+
+  .clear-btn.visible { display: block; }
+
+  .btn {
+    padding: 11px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .btn:hover { background: var(--border); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: rgba(91,111,255,0.12); }
+
+  .methods-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .method-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .method-btn:hover { color: var(--text); border-color: var(--muted); }
+  .method-btn.active { border-color: var(--accent2); color: var(--accent2); }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 16px;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .dot.green { background: var(--accent2); }
+  .dot.red { background: var(--danger); }
+  .dot.yellow { background: var(--warn); animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .frame-wrap {
+    flex: 1;
+    margin-top: 106px;
+    position: relative;
+  }
+
+  iframe {
+    width: 100%;
+    height: calc(100vh - 106px);
+    border: none;
+    display: block;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+  .toast.success { border-color: var(--accent2); color: var(--accent2); }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 10;
+  }
+
+  .overlay.hidden { display: none; }
+
+  .overlay-icon {
+    font-size: 40px;
+    opacity: 0.15;
+  }
+
+  .overlay-text {
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .overlay-sub {
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.6;
+  }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .new-tab-btn {
+    margin-top: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: none;
+  }
+
+  .new-tab-btn:hover { background: rgba(91,111,255,0.15); }
+  .new-tab-btn.visible { display: block; }
+</style>
 </head>
 <body>
-    <div class="header">
-        <input type="text" id="urlInput" placeholder="youtube.com or full video link" autocomplete="off">
-        <button onclick="directLoad()">Direct</button>
-        <button onclick="embedYouTube()">YouTube Embed</button>
-        <button onclick="translateLoad()">Translate</button>
+
+<div class="bar">
+  <div class="url-row">
+    <div class="url-input-wrap">
+      <input type="text" id="urlInput" placeholder="youtube.com/watch?v=... or any URL" autocomplete="off" spellcheck="false">
+      <button class="clear-btn" id="clearBtn" onclick="clearInput()" title="Clear">✕</button>
     </div>
+    <button class="btn primary" onclick="go()">Go</button>
+    <button class="btn" onclick="openNewTab()" title="Open in new tab">↗</button>
+  </div>
 
-    <iframe id="frame" src="https://drive-mad-unblock.github.io/"></iframe>
+  <div class="methods-row">
+    <button class="method-btn active" id="m-embed" onclick="setMethod('embed')">YT Embed</button>
+    <button class="method-btn" id="m-translate" onclick="setMethod('translate')">Translate Proxy</button>
+    <button class="method-btn" id="m-direct" onclick="setMethod('direct')">Direct</button>
+    <button class="method-btn" id="m-wayback" onclick="setMethod('wayback')">Wayback Mirror</button>
+    <button class="method-btn" id="m-codesandbox" onclick="setMethod('codesandbox')">Sandbox View</button>
+  </div>
 
-    <script>
-        function directLoad() {
-            let input = document.getElementById('urlInput').value.trim();
-            if (!input) return alert("Enter URL");
-            if (!input.startsWith('http')) input = 'https://' + input;
-            document.getElementById('frame').src = input;
+  <div class="status-bar">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">Ready — paste a URL and pick a method</span>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="overlay" id="overlay">
+    <div class="overlay-icon">⌕</div>
+    <div class="overlay-text">Nothing loaded yet</div>
+    <div class="overlay-sub">Enter a URL above and press Go</div>
+  </div>
+  <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation" referrerpolicy="no-referrer"></iframe>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentMethod = 'embed';
+let currentUrl = '';
+
+const frame = document.getElementById('frame');
+const overlay = document.getElementById('overlay');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const toast = document.getElementById('toast');
+
+function setMethod(m) {
+  currentMethod = m;
+  document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('m-' + m).classList.add('active');
+  const hints = {
+    embed: 'YT Embed — best for YouTube watch links',
+    translate: 'Translate Proxy — bypasses many blocks via Google Translate',
+    direct: 'Direct — loads URL in iframe (blocked by most sites)',
+    wayback: 'Wayback Mirror — loads archived version from Wayback Machine',
+    codesandbox: 'Sandbox View — CodeSandbox static preview (experimental)'
+  };
+  setStatus('idle', hints[m]);
+}
+
+function setStatus(state, msg) {
+  statusText.textContent = msg;
+  statusDot.className = 'dot';
+  if (state === 'loading') statusDot.classList.add('yellow');
+  else if (state === 'ok') statusDot.classList.add('green');
+  else if (state === 'error') statusDot.classList.add('red');
+}
+
+function showToast(msg, type = '') {
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.className = 'toast'; }, 3200);
+}
+
+function normalizeUrl(raw) {
+  raw = raw.trim();
+  if (!raw) return null;
+  if (!raw.startsWith('http://') && !raw.startsWith('https://')) raw = 'https://' + raw;
+  try { return new URL(raw).href; }
+  catch { return null; }
+}
+
+function extractYouTubeId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+    if (u.hostname.includes('youtube.com')) {
+      const v = u.searchParams.get('v');
+      if (v) return v;
+      if (u.pathname.startsWith('/shorts/') || u.pathname.startsWith('/embed/')) {
+        return u.pathname.split('/').filter(Boolean).pop().split('?')[0];
+      }
+    }
+  } catch {}
+  return null;
+}
+
+function loadFrame(src) {
+  overlay.innerHTML = '<div class="spinner"></div><div class="overlay-text" style="color:var(--muted);font-size:13px;font-family:monospace">Loading...</div>';
+  overlay.classList.remove('hidden');
+
+  setStatus('loading', 'Loading ' + src.slice(0, 60) + (src.length > 60 ? '…' : ''));
+
+  const timeout = setTimeout(() => {
+    setStatus('error', 'Timed out or blocked by X-Frame-Options / CSP');
+    showOverlayBlocked(src);
+  }, 8000);
+
+  frame.onload = () => {
+    clearTimeout(timeout);
+    try {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body || doc.body.innerHTML.trim() === '') throw new Error('empty');
+      overlay.classList.add('hidden');
+      setStatus('ok', 'Loaded — ' + src.slice(0, 60));
+    } catch {
+      clearTimeout(timeout);
+      setStatus('error', 'Content blocked or empty — try another method');
+      showOverlayBlocked(src);
+    }
+  };
+
+  frame.onerror = () => {
+    clearTimeout(timeout);
+    setStatus('error', 'Failed to load — site likely blocked iframe');
+    showOverlayBlocked(src);
+  };
+
+  frame.src = src;
+}
+
+function showOverlayBlocked(src) {
+  overlay.innerHTML = `
+    <div class="overlay-icon">⛔</div>
+    <div class="overlay-text">Blocked or inaccessible</div>
+    <div class="overlay-sub">This site likely blocks iframe embedding</div>
+    <button class="new-tab-btn visible" onclick="window.open('${src.replace(/'/g, "\\'")}', '_blank')">Open in new tab ↗</button>
+  `;
+  overlay.classList.remove('hidden');
+}
+
+function go() {
+  const raw = document.getElementById('urlInput').value.trim();
+  if (!raw) { showToast('Enter a URL first', 'error'); return; }
+
+  const url = normalizeUrl(raw);
+  if (!url) { showToast('Invalid URL', 'error'); return; }
+  currentUrl = url;
+
+  if (currentMethod === 'embed') {
+    const vid = extractYouTubeId(url);
+    if (!vid) { showToast('Not a YouTube URL — switch method or paste a watch link', 'error'); return; }
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${vid}?autoplay=0&rel=0&modestbranding=1`;
+    showToast('Loading YouTube embed…', 'success');
+    loadFrame(embedUrl);
+
+  } else if (currentMethod === 'translate') {
+    const proxy = `https://translate.google.com/translate?hl=en&sl=auto&tl=en&u=${encodeURIComponent(url)}`;
+    showToast('Loading via Google Translate proxy…');
+    loadFrame(proxy);
+
+  } else if (currentMethod === 'direct') {
+    showToast('Direct load — most sites will block this', 'error');
+    loadFrame(url);
+
+  } else if (currentMethod === 'wayback') {
+    const wb = `https://timetravel.mementoweb.org/timemap/link/${url}`;
+    setStatus('loading', 'Checking Wayback Machine for ' + url);
+    overlay.innerHTML = '<div class="spinner"></div><div class="overlay-text" style="color:var(--muted);font-size:13px;font-family:monospace">Querying archive…</div>';
+    overlay.classList.remove('hidden');
+
+    fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(url)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.archived_snapshots?.closest?.url) {
+          const snap = data.archived_snapshots.closest.url;
+          showToast('Found snapshot from ' + data.archived_snapshots.closest.timestamp.slice(0,8));
+          loadFrame(snap);
+        } else {
+          setStatus('error', 'No Wayback snapshot found for this URL');
+          showToast('No archived version found', 'error');
+          showOverlayBlocked(url);
         }
+      })
+      .catch(() => {
+        setStatus('error', 'Could not reach Wayback Machine');
+        showToast('Wayback check failed', 'error');
+        showOverlayBlocked(url);
+      });
 
-        function translateLoad() {
-            let input = document.getElementById('urlInput').value.trim();
-            if (!input) return alert("Enter URL");
-            if (!input.startsWith('http')) input = 'https://' + input;
-            const url = `https://translate.google.com/translate?hl=en&sl=auto&tl=en&u=${encodeURIComponent(input)}`;
-            document.getElementById('frame').src = url;
-        }
+  } else if (currentMethod === 'codesandbox') {
+    showToast('Sandbox view — works best for static pages');
+    const sb = `https://codesandbox.io/embed/?editorsize=0&hidenavigation=1&view=preview&entry=${encodeURIComponent(url)}`;
+    loadFrame(sb);
+  }
+}
 
-        // Special for YouTube videos
-        function embedYouTube() {
-            let input = document.getElementById('urlInput').value.trim();
-            if (!input.includes('youtube')) {
-                return alert("Enter a YouTube link");
-            }
-            // Convert to embed if it's a watch link
-            let videoId = input.split('v=')[1] || input.split('/').pop();
-            if (videoId) videoId = videoId.split('&')[0];
-            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-            document.getElementById('frame').src = embedUrl;
-        }
+function openNewTab() {
+  const raw = document.getElementById('urlInput').value.trim();
+  const url = normalizeUrl(raw) || currentUrl;
+  if (!url) { showToast('No URL to open', 'error'); return; }
+  window.open(url, '_blank');
+}
 
-        // Enter key = Translate
-        document.getElementById('urlInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') translateLoad();
-        });
-    </script>
+function clearInput() {
+  document.getElementById('urlInput').value = '';
+  document.getElementById('clearBtn').classList.remove('visible');
+}
+
+document.getElementById('urlInput').addEventListener('input', function() {
+  document.getElementById('clearBtn').classList.toggle('visible', this.value.length > 0);
+  const url = normalizeUrl(this.value);
+  if (url && extractYouTubeId(url)) {
+    setMethod('embed');
+  }
+});
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') go();
+});
+
+setMethod('embed');
+</script>
 </body>
 </html>
