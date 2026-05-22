@@ -3,42 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unblocker</title>
+    <title>School Unblocker</title>
     <style>
-        body { margin:0; background:#111; color:#fff; font-family:Arial; overflow:hidden; }
-        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:10px; z-index:1000; display:flex; gap:8px; box-shadow:0 2px 10px #000; }
-        input { flex:1; padding:12px; font-size:17px; background:#222; border:none; border-radius:6px; color:white; }
-        button { padding:12px 20px; background:#0066ff; border:none; border-radius:6px; color:white; cursor:pointer; font-size:16px; }
-        iframe { width:100vw; height:100vh; border:none; margin-top:60px; }
+        body { margin:0; background:#0a0a0a; color:#fff; font-family:Arial,sans-serif; overflow:hidden; }
+        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:10px; z-index:1000; display:flex; gap:8px; box-shadow:0 2px 8px #000; }
+        input { flex:1; padding:14px; font-size:17px; background:#1f1f1f; border:none; border-radius:8px; color:white; }
+        button { padding:14px 24px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; font-weight:bold; }
+        iframe { width:100vw; height:100vh; border:none; margin-top:58px; }
+        .links { position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.8); padding:10px; border-radius:8px; font-size:14px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <input type="text" id="url" placeholder="Enter any website (youtube.com, roblox.com, etc)" autocomplete="off">
-        <button onclick="go()">Go</button>
+        <input type="text" id="urlInput" placeholder="Try a GitHub unblocker or game site" autocomplete="off">
+        <button onclick="loadSite()">Go</button>
     </div>
 
-    <iframe id="frame"></iframe>
+    <iframe id="frame" src="https://drive-mad-unblock.github.io/"></iframe>
+
+    <div class="links">
+        <strong>Quick Mirrors:</strong><br>
+        <a href="#" onclick="quickLoad('https://drive-mad-unblock.github.io/');return false">Drive Mad</a> |
+        <a href="#" onclick="quickLoad('https://github.com/Neruvy/duckmath');return false">DuckMath Games</a>
+    </div>
 
     <script>
-        function go() {
-            let input = document.getElementById('url').value.trim();
-            if (!input) return alert("Type a website!");
+        function loadSite() {
+            let input = document.getElementById('urlInput').value.trim();
+            if (!input) return;
 
             if (!input.startsWith('http')) input = 'https://' + input;
 
-            // Try a few different public proxy methods (replace with currently working ones)
-            // Option 1: Direct (often blocked)
-            // document.getElementById('frame').src = input;
-
-            // Option 2: Common proxy wrapper (change to one that currently works for you)
-            const proxy = "https://your-working-proxy.example.com/proxy/";   // ← Change this
-            document.getElementById('frame').src = proxy + encodeURIComponent(input);
+            document.getElementById('frame').src = input;
         }
 
-        // Press Enter to go
-        document.getElementById('url').addEventListener("keypress", function(e) {
-            if (e.key === "Enter") go();
+        function quickLoad(url) {
+            document.getElementById('frame').src = url;
+        }
+
+        // Enter key
+        document.getElementById('urlInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') loadSite();
         });
     </script>
 </body>
