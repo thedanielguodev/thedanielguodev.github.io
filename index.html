@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Unblocker</title>
+    <title>Unblocker</title>
     <style>
-        body { margin:0; background:#111; color:#fff; font-family:Arial; overflow:hidden; }
-        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:12px; z-index:1000; display:flex; gap:10px; box-shadow:0 2px 10px #000; }
+        body { margin:0; background:#0f0f0f; color:#fff; font-family:Arial; overflow:hidden; }
+        .header { position:fixed; top:0; left:0; width:100%; background:rgba(0,0,0,0.95); padding:12px; z-index:1000; display:flex; gap:8px; box-shadow:0 2px 10px #000; }
         input { flex:1; padding:14px; font-size:17px; background:#222; border:none; border-radius:8px; color:white; }
-        button { padding:14px 28px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; font-size:16px; }
-        iframe { width:100vw; height:100vh; border:none; margin-top:60px; }
+        button { padding:14px 20px; background:#0066ff; border:none; border-radius:8px; color:white; cursor:pointer; }
+        iframe { width:100vw; height:100vh; border:none; margin-top:62px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <input type="text" id="urlInput" placeholder="youtube.com or duckmath.org" autocomplete="off">
+        <input type="text" id="urlInput" placeholder="youtube.com or full video link" autocomplete="off">
         <button onclick="directLoad()">Direct</button>
-        <button onclick="translateLoad()">Google Translate Trick</button>
+        <button onclick="embedYouTube()">YouTube Embed</button>
+        <button onclick="translateLoad()">Translate</button>
     </div>
 
     <iframe id="frame" src="https://drive-mad-unblock.github.io/"></iframe>
@@ -24,24 +25,35 @@
     <script>
         function directLoad() {
             let input = document.getElementById('urlInput').value.trim();
-            if (!input) return alert("Enter a URL");
+            if (!input) return alert("Enter URL");
             if (!input.startsWith('http')) input = 'https://' + input;
             document.getElementById('frame').src = input;
         }
 
         function translateLoad() {
             let input = document.getElementById('urlInput').value.trim();
-            if (!input) return alert("Enter a URL");
+            if (!input) return alert("Enter URL");
             if (!input.startsWith('http')) input = 'https://' + input;
-            
-            // Google Translate bypass (often works better)
-            const translateUrl = `https://translate.google.com/translate?hl=en&sl=auto&tl=en&u=${encodeURIComponent(input)}`;
-            document.getElementById('frame').src = translateUrl;
+            const url = `https://translate.google.com/translate?hl=en&sl=auto&tl=en&u=${encodeURIComponent(input)}`;
+            document.getElementById('frame').src = url;
         }
 
-        // Enter key
+        // Special for YouTube videos
+        function embedYouTube() {
+            let input = document.getElementById('urlInput').value.trim();
+            if (!input.includes('youtube')) {
+                return alert("Enter a YouTube link");
+            }
+            // Convert to embed if it's a watch link
+            let videoId = input.split('v=')[1] || input.split('/').pop();
+            if (videoId) videoId = videoId.split('&')[0];
+            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            document.getElementById('frame').src = embedUrl;
+        }
+
+        // Enter key = Translate
         document.getElementById('urlInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') translateLoad(); // Default to translate trick
+            if (e.key === 'Enter') translateLoad();
         });
     </script>
 </body>
